@@ -39,11 +39,14 @@ export const Colors = {
  * layers of cut card stock.
  */
 export const Paper = {
-  raised: '0px 2px 0px rgba(120, 84, 34, 0.10), 0px 8px 18px -6px rgba(120, 84, 34, 0.28)',
-  low: '0px 1px 0px rgba(120, 84, 34, 0.10), 0px 3px 8px -3px rgba(120, 84, 34, 0.22)',
-  pressed: '0px 1px 0px rgba(120, 84, 34, 0.12)',
-  inset: 'inset 0px 2px 4px rgba(120, 84, 34, 0.18)',
+  raised: '0px 1px 1px rgba(90, 62, 24, 0.18), 0px 4px 0px rgba(90, 62, 24, 0.10), 0px 12px 20px -6px rgba(90, 62, 24, 0.38)',
+  low: '0px 1px 1px rgba(90, 62, 24, 0.18), 0px 3px 0px rgba(90, 62, 24, 0.08), 0px 6px 10px -4px rgba(90, 62, 24, 0.30)',
+  pressed: '0px 1px 1px rgba(90, 62, 24, 0.20)',
+  inset: 'inset 0px 3px 5px rgba(90, 62, 24, 0.28)',
 } as const;
+
+/** Fill for the shadow a paper layer casts on the layer beneath it. */
+export const LayerShadow = 'rgba(70, 48, 18, 0.30)';
 
 export const Spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
 export const Radius = { sm: 10, md: 18, lg: 26, pill: 999 } as const;

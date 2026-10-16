@@ -4,8 +4,8 @@ import { ScrollView, View } from 'react-native';
 
 import { HeaderButton, NewEntryButton } from '@/components/header-buttons';
 import { HoneycombBanner, ProgressCard } from '@/components/progress';
-import { Button, Empty, Row, Section, T, attempt } from '@/components/ui';
-import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { Button, Empty, PaperBackground, Row, Section, T, attempt } from '@/components/ui';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useMe, useStore } from '@/data/store';
 import { bannerFor, progressFor } from '@/data/rules';
 
@@ -43,43 +43,45 @@ export default function BannerScreen() {
   }, [navigation, arranging, me.name, tiles.length]);
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: Colors.background }}
-      contentContainerStyle={{ padding: Spacing.lg, paddingBottom: 120 }}
-      onLayout={(e) => setViewport(e.nativeEvent.layout.height)}>
-      <View style={{ width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center', gap: Spacing.lg }}>
-        {arranging && <T variant="small">Tap a badge, then tap the slot where it sits on your physical banner.</T>}
-        {viewport > 0 && (
-          <HoneycombBanner
-            db={db}
-            userId={me.id}
-            height={viewport - Spacing.lg * 2 - (arranging ? 26 : 0)}
-            arranging={arranging}
-            onPlace={(id, slot) => attempt(() => actions.placeOnBanner(id, slot))}
-          />
-        )}
-        {tiles.length === 0 && (
-          <Empty icon="hexagon-outline" title="Your banner is ready for its first badge" body="Start a badge and bring it to a sett. Every badge you earn takes a spot here.">
-            <Button label="Find a badge" icon="compass" onPress={() => router.push('/browser')} />
-          </Empty>
-        )}
-
-        <Section title="In progress">
-          {inProgress.length === 0 ? (
-            <T variant="muted">Nothing in progress. Pick something you&apos;ve been meaning to try.</T>
-          ) : (
-            inProgress.map((p) => <ProgressCard key={p.id} db={db} progress={p} />)
+    <PaperBackground>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: Spacing.lg, paddingBottom: 120 }}
+        onLayout={(e) => setViewport(e.nativeEvent.layout.height)}>
+        <View style={{ width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center', gap: Spacing.lg }}>
+          {arranging && <T variant="small">Tap a badge, then tap the slot where it sits on your physical banner.</T>}
+          {viewport > 0 && (
+            <HoneycombBanner
+              db={db}
+              userId={me.id}
+              height={viewport - Spacing.lg * 2 - (arranging ? 26 : 0)}
+              arranging={arranging}
+              onPlace={(id, slot) => attempt(() => actions.placeOnBanner(id, slot))}
+            />
           )}
-        </Section>
+          {tiles.length === 0 && (
+            <Empty icon="hexagon-outline" title="Your banner is ready for its first badge" body="Start a badge and bring it to a sett. Every badge you earn takes a spot here.">
+              <Button label="Find a badge" icon="compass" onPress={() => router.push('/browser')} />
+            </Empty>
+          )}
 
-        {saved.length > 0 && (
-          <Section title="Saved for later">
-            {saved.map((p) => (
-              <ProgressCard key={p.id} db={db} progress={p} />
-            ))}
+          <Section title="In progress">
+            {inProgress.length === 0 ? (
+              <T variant="muted">Nothing in progress. Pick something you&apos;ve been meaning to try.</T>
+            ) : (
+              inProgress.map((p) => <ProgressCard key={p.id} db={db} progress={p} />)
+            )}
           </Section>
-        )}
-      </View>
-    </ScrollView>
+
+          {saved.length > 0 && (
+            <Section title="Saved for later">
+              {saved.map((p) => (
+                <ProgressCard key={p.id} db={db} progress={p} />
+              ))}
+            </Section>
+          )}
+        </View>
+      </ScrollView>
+    </PaperBackground>
   );
 }

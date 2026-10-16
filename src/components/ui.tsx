@@ -2,6 +2,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import type { ReactNode } from 'react';
 import {
   Alert,
+  Image,
   Platform,
   Pressable,
   ScrollView,
@@ -37,15 +38,34 @@ export function attempt<T>(fn: () => T): T | undefined {
   }
 }
 
+const GRAIN = require('@/assets/images/paper-grain.png');
+
+/** Paper grain: a tiled texture laid over a surface. */
+export function Grain({ opacity = 1 }: { opacity?: number }) {
+  return <Image source={GRAIN} resizeMode="repeat" pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity, width: '100%', height: '100%' }]} />;
+}
+
+/** A sheet of sand-colored paper behind a screen's content. */
+export function PaperBackground({ children }: { children: ReactNode }) {
+  return (
+    <View style={styles.screen}>
+      <Grain />
+      {children}
+    </View>
+  );
+}
+
 export function Screen({ children, contentContainerStyle, ...props }: ScrollViewProps & { children: ReactNode }) {
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={[styles.screenContent, contentContainerStyle]}
-      keyboardShouldPersistTaps="handled"
-      {...props}>
-      <View style={styles.column}>{children}</View>
-    </ScrollView>
+    <PaperBackground>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[styles.screenContent, contentContainerStyle]}
+        keyboardShouldPersistTaps="handled"
+        {...props}>
+        <View style={styles.column}>{children}</View>
+      </ScrollView>
+    </PaperBackground>
   );
 }
 
@@ -108,9 +128,16 @@ export function Chip({ label, selected, onPress, icon }: { label: string; select
 }
 
 export function Card({ children, onPress, style }: { children: ReactNode; onPress?: () => void; style?: StyleProp<ViewStyle> }) {
-  if (!onPress) return <View style={[styles.card, style]}>{children}</View>;
+  if (!onPress)
+    return (
+      <View style={[styles.card, style]}>
+        <Grain opacity={0.7} />
+        {children}
+      </View>
+    );
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.cardPressed, style]}>
+      <Grain opacity={0.7} />
       {children}
     </Pressable>
   );
@@ -274,6 +301,7 @@ const styles = StyleSheet.create({
   chipLabelSelected: { color: Colors.primaryText },
   card: {
     backgroundColor: Colors.surface,
+    overflow: 'hidden',
     borderRadius: Radius.md,
     padding: Spacing.lg,
     gap: Spacing.sm,

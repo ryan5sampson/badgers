@@ -1,13 +1,15 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import Svg, { G, Path, Polygon } from 'react-native-svg';
+import Svg, { Defs, Path, Pattern, Image as SvgImage } from 'react-native-svg';
 
-import { BadgeArt, HEX_RATIO, hexPoints } from '@/components/badge-art';
+import { BadgeArt, HEX_RATIO, hexPath } from '@/components/badge-art';
 import { Card, Pill, ProgressBar, Row, T } from '@/components/ui';
 import { Colors, Spacing, shade } from '@/constants/theme';
 import { bannerSlots, byId, checklist, displayStatus } from '@/data/rules';
 import type { BadgeProgress, Db, Id } from '@/data/types';
+
+const GRAIN = require('@/assets/images/paper-grain.png');
 
 const levelLabel = (level: string) => (level === 'master' ? 'Master' : 'Beginner');
 
@@ -71,8 +73,8 @@ function layout(width: number, rows: number) {
   const half = width / 2;
   // Deep enough that the point clears the lowest middle cell's corners.
   const depth = Math.max(
-    (midBottom + 10 - body) / ((half - hexW / 4) / half),
-    (midBottom - hexH / 2 + 10 - body) / ((half - hexW / 2) / half),
+    (midBottom + 26 - body) / ((half - hexW / 4) / half),
+    (midBottom - hexH / 2 + 26 - body) / ((half - hexW / 2) / half),
     24,
   );
   return { hexW, hexH, slot, body, tip: body + depth, count: rows * COLS };
@@ -113,7 +115,13 @@ export function HoneycombBanner({
   const maxSlot = Math.max(-1, ...slots.keys());
   const rows = width ? rowsFor(width, height, maxSlot + 1) : 0;
   const g = width ? layout(width, rows) : null;
-  const pennant = g ? `M 0 0 H ${width} V ${g.body} L ${width / 2} ${g.tip} L 0 ${g.body} Z` : '';
+  const pennantAt = (inset: number) =>
+    g ? `M ${inset} ${inset} H ${width - inset} V ${g.body - inset} L ${width / 2} ${g.tip - inset * 1.8} L ${inset} ${g.body - inset} Z` : '';
+  const pennant = pennantAt(0);
+  // The slots are holes cut through the front sheets.
+  const holes = g ? Array.from({ length: g.count }, (_, i) => g.slot(i)).map(({ x, y }) => hexPath(x, y, g.hexW, g.hexH)).join(' ') : '';
+  const frame = `${pennant} ${holes}`;
+  const panel = `${pennantAt(9)} ${holes}`;
 
   const tapSlot = (index: number) => {
     const tile = slots.get(index);
@@ -131,17 +139,24 @@ export function HoneycombBanner({
       {g && (
         <>
           <Svg width={width} height={g.tip + 8} style={StyleSheet.absoluteFill}>
-            <Path d={pennant} fill="rgba(80, 60, 30, 0.22)" transform="translate(0, 7)" />
-            <Path d={pennant} fill={Colors.seaDeep} />
-            {Array.from({ length: g.count }, (_, i) => {
-              const { x, y } = g.slot(i);
-              return (
-                <G key={i}>
-                  <Polygon points={hexPoints(x, y, g.hexW, g.hexH)} fill={shade(Colors.seaDeep, -0.22)} />
-                  <Polygon points={hexPoints(x + 2, y + 3, g.hexW - 4, g.hexH - 4)} fill={shade(Colors.seaDeep, -0.12)} />
-                </G>
-              );
-            })}
+            <Defs>
+              <Pattern id="banner-grain" patternUnits="userSpaceOnUse" width={256} height={256}>
+                <SvgImage href={GRAIN} width={256} height={256} />
+              </Pattern>
+            </Defs>
+            {/* The whole banner's shadow on the page */}
+            <Path d={pennant} fill="rgba(70, 48, 18, 0.14)" transform="translate(0, 9)" />
+            <Path d={pennant} fill="rgba(70, 48, 18, 0.20)" transform="translate(0, 4)" />
+            {/* Back sheet, seen through the holes */}
+            <Path d={pennant} fill={shade(Colors.seaDeep, -0.32)} />
+            {/* Frame sheet: casts a shadow into each hole, then sits on top */}
+            <Path d={frame} fillRule="evenodd" fill="rgba(20, 14, 4, 0.22)" transform="translate(0, 7)" />
+            <Path d={frame} fillRule="evenodd" fill="rgba(20, 14, 4, 0.30)" transform="translate(0, 3)" />
+            <Path d={frame} fillRule="evenodd" fill={Colors.seaDeep} />
+            {/* Panel sheet, inset from the frame and casting onto it */}
+            <Path d={panel} fillRule="evenodd" fill="rgba(20, 14, 4, 0.28)" transform="translate(0, 3)" />
+            <Path d={panel} fillRule="evenodd" fill={Colors.sea} />
+            <Path d={frame} fillRule="evenodd" fill="url(#banner-grain)" opacity={0.6} />
           </Svg>
           {Array.from({ length: g.count }, (_, i) => {
             const { x, y } = g.slot(i);
