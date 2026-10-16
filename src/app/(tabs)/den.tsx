@@ -5,7 +5,7 @@ import { Pressable, TextInput, View } from 'react-native';
 import { BadgeArt } from '@/components/badge-art';
 import { JournalCard } from '@/components/journal';
 import { Avatar, Button, Card, Chip, Field, Icon, Row, Screen, Section, T, attempt, formatDate, timeAgo } from '@/components/ui';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { Colors, Paper, Radius, Spacing } from '@/constants/theme';
 import { useMe, useStore } from '@/data/store';
 import { byId, denFeed, isClanLead, userName, waitingOn, type FeedItem } from '@/data/rules';
 import type { Db, RsvpStatus } from '@/data/types';
@@ -67,7 +67,7 @@ function WaitingOnYou({ db }: { db: Db }) {
         const req = byId(db.requirements, r.requirement_id);
         if (!p || !badge || !req) return null;
         return (
-          <Card key={r.id} style={{ borderColor: Colors.primary }}>
+          <Card key={r.id} style={{ borderLeftWidth: 6, borderLeftColor: Colors.primary }}>
             <T>
               <T style={{ fontWeight: '700' }}>{userName(db, p.user_id)}</T> says they taught you the {badge.name} info part:
             </T>
@@ -83,7 +83,7 @@ function WaitingOnYou({ db }: { db: Db }) {
         const badge = byId(db.badges, p.badge_id);
         if (!badge) return null;
         return (
-          <Card key={p.id} onPress={() => router.push({ pathname: '/progress/[id]', params: { id: p.id } })} style={{ borderColor: Colors.accent }}>
+          <Card key={p.id} onPress={() => router.push({ pathname: '/progress/[id]', params: { id: p.id } })} style={{ borderLeftWidth: 6, borderLeftColor: Colors.accent }}>
             <Row gap={Spacing.md}>
               <BadgeArt badge={badge} size={40} />
               <T style={{ flex: 1 }}>
@@ -159,7 +159,7 @@ function Chat({ db }: { db: Db }) {
             {!mine && <Avatar name={userName(db, m.user_id)} size={28} />}
             <View style={{ maxWidth: '78%', gap: 2, alignItems: mine ? 'flex-end' : 'flex-start' }}>
               {!mine && <T variant="small">{userName(db, m.user_id)}</T>}
-              <View style={{ backgroundColor: mine ? Colors.primary : Colors.surface, borderRadius: Radius.md, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderWidth: mine ? 0 : 1, borderColor: Colors.border }}>
+              <View style={{ backgroundColor: mine ? Colors.primary : Colors.surface, borderRadius: Radius.md, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, boxShadow: Paper.low }}>
                 <T style={{ color: mine ? Colors.primaryText : Colors.text }}>{m.body}</T>
               </View>
               <T variant="small">{timeAgo(m.created_at)}</T>
@@ -175,9 +175,9 @@ function Chat({ db }: { db: Db }) {
           placeholder="Message your clan"
           placeholderTextColor={Colors.textMuted}
           accessibilityLabel="Message your clan"
-          style={{ flex: 1, backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: Radius.pill, paddingHorizontal: Spacing.lg, paddingVertical: 10, fontSize: 15, color: Colors.text }}
+          style={{ flex: 1, backgroundColor: Colors.surface, boxShadow: Paper.inset, borderRadius: Radius.pill, paddingHorizontal: Spacing.lg, paddingVertical: 10, fontSize: 15, color: Colors.text }}
         />
-        <Pressable accessibilityRole="button" accessibilityLabel="Send" onPress={send} style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Send" onPress={send} style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: Colors.accent, alignItems: 'center', justifyContent: 'center', boxShadow: Paper.low }}>
           <Icon name="send" size={20} color={Colors.primaryText} />
         </Pressable>
       </Row>

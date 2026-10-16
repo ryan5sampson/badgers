@@ -1,8 +1,11 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { View } from 'react-native';
 
+import { PaperScene } from '@/components/paper-scene';
 import { BannerGrid, ProgressCard } from '@/components/progress';
 import { Button, Empty, Row, Screen, Section, T } from '@/components/ui';
+import { Spacing } from '@/constants/theme';
 import { useMe, useStore } from '@/data/store';
 import { bannerFor, progressFor } from '@/data/rules';
 
@@ -16,12 +19,19 @@ export default function BannerScreen() {
 
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <T variant="heading">{me.name}&apos;s banner</T>
-        {tiles.length > 1 && (
-          <Button small kind={arranging ? 'primary' : 'secondary'} icon={arranging ? 'check' : 'arrow-all'} label={arranging ? 'Done' : 'Arrange'} onPress={() => setArranging(!arranging)} />
-        )}
-      </Row>
+      <PaperScene height={128} clouds={false} style={{ padding: Spacing.lg }}>
+        <Row style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <View>
+            <T variant="heading">{me.name}&apos;s banner</T>
+            <T style={{ fontWeight: '700' }}>
+              {tiles.length} {tiles.length === 1 ? 'badge' : 'badges'} earned · {inProgress.length} in progress
+            </T>
+          </View>
+          {tiles.length > 1 && (
+            <Button small kind={arranging ? 'primary' : 'secondary'} icon={arranging ? 'check' : 'arrow-all'} label={arranging ? 'Done' : 'Arrange'} onPress={() => setArranging(!arranging)} />
+          )}
+        </Row>
+      </PaperScene>
 
       {tiles.length > 0 ? (
         <BannerGrid

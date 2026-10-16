@@ -53,7 +53,7 @@ export default function BrowserScreen() {
             return (
               <Card key={b.id} onPress={() => router.push({ pathname: '/badge/[id]', params: { id: b.id } })}>
                 <Row gap={Spacing.md}>
-                  <BadgeArt badge={b} size={52} />
+                  <BadgeArt badge={b} size={52} level={holders.find((h) => h.user.id === me.id)?.level} />
                   <View style={{ flex: 1, gap: 2 }}>
                     <T style={{ fontWeight: '700' }}>{b.name}</T>
                     <T variant="small">

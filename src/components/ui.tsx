@@ -16,7 +16,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { Colors, MaxContentWidth, Radius, Spacing, type IconName } from '@/constants/theme';
+import { Colors, MaxContentWidth, Paper, Radius, Spacing, shade, type IconName } from '@/constants/theme';
 import { RuleError } from '@/data/store';
 
 export { MaterialCommunityIcons as Icon };
@@ -82,8 +82,10 @@ export function Button({
         styles.button,
         small && styles.buttonSmall,
         buttonStyles[kind],
+        kind !== 'ghost' && { boxShadow: pressed ? Paper.pressed : Paper.low },
         disabled && styles.disabled,
-        pressed && styles.pressed,
+        pressed && kind !== 'ghost' && styles.sink,
+        pressed && kind === 'ghost' && styles.pressed,
         style,
       ]}>
       {icon && <MaterialCommunityIcons name={icon} size={small ? 16 : 18} color={color} />}
@@ -108,7 +110,7 @@ export function Chip({ label, selected, onPress, icon }: { label: string; select
 export function Card({ children, onPress, style }: { children: ReactNode; onPress?: () => void; style?: StyleProp<ViewStyle> }) {
   if (!onPress) return <View style={[styles.card, style]}>{children}</View>;
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed, style]}>
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.cardPressed, style]}>
       {children}
     </Pressable>
   );
@@ -134,11 +136,12 @@ export function Avatar({ name, size = 32 }: { name: string; size?: number }) {
         width: size,
         height: size,
         borderRadius: size / 2,
-        backgroundColor: `hsl(${hue}, 35%, 82%)`,
+        backgroundColor: `hsl(${hue}, 45%, 80%)`,
+        boxShadow: Paper.low,
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-      <Text style={{ fontSize: size * 0.42, fontWeight: '700', color: `hsl(${hue}, 40%, 28%)` }}>
+      <Text style={{ fontSize: size * 0.42, fontWeight: '800', color: `hsl(${hue}, 45%, 26%)` }}>
         {name.slice(0, 1).toUpperCase()}
       </Text>
     </View>
@@ -181,7 +184,7 @@ export function Field({ label, hint, ...props }: TextInputProps & { label: strin
 
 export function Pill({ label, tone = 'neutral' }: { label: string; tone?: 'neutral' | 'primary' | 'accent' }) {
   const bg = tone === 'primary' ? Colors.primarySoft : tone === 'accent' ? Colors.accentSoft : Colors.surfaceMuted;
-  const fg = tone === 'primary' ? Colors.primary : tone === 'accent' ? Colors.accent : Colors.textMuted;
+  const fg = tone === 'primary' ? Colors.primary : tone === 'accent' ? shade(Colors.accent, -0.2) : Colors.textMuted;
   return (
     <View style={[styles.pill, { backgroundColor: bg }]}>
       <Text style={[styles.pillLabel, { color: fg }]}>{label}</Text>
@@ -213,9 +216,9 @@ export function formatDate(iso: string, withTime = false) {
 }
 
 const textStyles = StyleSheet.create({
-  title: { fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
-  heading: { fontSize: 22, fontWeight: '700' },
-  subheading: { fontSize: 17, fontWeight: '700' },
+  title: { fontSize: 30, fontWeight: '900', letterSpacing: -0.6 },
+  heading: { fontSize: 22, fontWeight: '800', letterSpacing: -0.3 },
+  subheading: { fontSize: 17, fontWeight: '800' },
   body: { fontSize: 15, lineHeight: 22 },
   muted: { fontSize: 15, lineHeight: 22, color: Colors.textMuted },
   small: { fontSize: 13, lineHeight: 18, color: Colors.textMuted },
@@ -225,7 +228,7 @@ const textStyles = StyleSheet.create({
 const buttonStyles = StyleSheet.create({
   primary: { backgroundColor: Colors.primary },
   accent: { backgroundColor: Colors.accent },
-  secondary: { backgroundColor: Colors.primarySoft },
+  secondary: { backgroundColor: Colors.surface },
   ghost: { backgroundColor: 'transparent' },
 });
 
@@ -244,10 +247,11 @@ const styles = StyleSheet.create({
     borderRadius: Radius.pill,
   },
   buttonSmall: { paddingHorizontal: Spacing.md, paddingVertical: 6 },
-  buttonLabel: { fontSize: 15, fontWeight: '700' },
+  buttonLabel: { fontSize: 15, fontWeight: '800' },
   buttonLabelSmall: { fontSize: 13 },
   disabled: { opacity: 0.45 },
-  pressed: { opacity: 0.75 },
+  pressed: { opacity: 0.7 },
+  sink: { transform: [{ translateY: 2 }] },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -256,29 +260,27 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: Radius.pill,
     backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    boxShadow: Paper.low,
   },
-  chipSelected: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  chipLabel: { fontSize: 13, fontWeight: '600', color: Colors.text },
+  chipSelected: { backgroundColor: Colors.primary, boxShadow: Paper.pressed, transform: [{ translateY: 1 }] },
+  chipLabel: { fontSize: 13, fontWeight: '700', color: Colors.text },
   chipLabelSelected: { color: Colors.primaryText },
   card: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
     padding: Spacing.lg,
     gap: Spacing.sm,
+    boxShadow: Paper.raised,
   },
+  cardPressed: { boxShadow: Paper.low, transform: [{ translateY: 2 }] },
   section: { gap: Spacing.md },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  progressTrack: { height: 6, borderRadius: 3, backgroundColor: Colors.surfaceMuted, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: Colors.primary, borderRadius: 3 },
+  progressTrack: { height: 10, borderRadius: 5, backgroundColor: Colors.surfaceMuted, overflow: 'hidden', boxShadow: Paper.inset },
+  progressFill: { height: '100%', backgroundColor: Colors.palm, borderRadius: 5 },
   empty: { alignItems: 'center', gap: Spacing.sm, padding: Spacing.xl },
   input: {
     backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    boxShadow: Paper.inset,
     borderRadius: Radius.sm,
     paddingHorizontal: Spacing.md,
     paddingVertical: 10,

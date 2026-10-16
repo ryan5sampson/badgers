@@ -61,6 +61,6 @@ These fill gaps in the spec. Each is the simplest option, and each is easy to ch
 - **Master level:** only a master of the badge can award the master level. If no master exists, no one can award it yet.
 - **Journals** are visible to the whole clan; there's no per-entry privacy setting.
 - **Banner arranging** uses arrow buttons instead of drag and drop.
-- **Badge art** is a placeholder: a category-colored circle with an icon, a silver border for beginner, and a gold border for master.
+- **Badge art** is a placeholder: a flat-topped hexagon in the category color with an icon and cut-paper hills. Earned beginner badges have a green rim and master badges a purple rim.
 - **Removing a duplicate** marks the badge `declined` instead of deleting it, so earned history stays intact.
 - **Events** take a typed date for now; a date picker comes later.

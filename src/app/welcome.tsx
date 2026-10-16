@@ -2,8 +2,9 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
+import { PaperScene } from '@/components/paper-scene';
 import { Avatar, Button, Card, Field, Icon, Row, Screen, Section, T, attempt } from '@/components/ui';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Paper, Spacing } from '@/constants/theme';
 import { useStore } from '@/data/store';
 
 /**
@@ -20,11 +21,13 @@ export default function Welcome() {
   const enter = () => router.replace('/');
 
   return (
-    <Screen contentContainerStyle={{ paddingTop: 72 }}>
-      <View style={{ alignItems: 'center', gap: Spacing.sm }}>
-        <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name="paw" size={38} color={Colors.primaryText} />
+    <Screen contentContainerStyle={{ paddingTop: 48 }}>
+      <PaperScene height={200} style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ width: 76, height: 76, borderRadius: 38, backgroundColor: Colors.cloud, alignItems: 'center', justifyContent: 'center', boxShadow: Paper.raised, marginBottom: 40 }}>
+          <Icon name="paw" size={40} color={Colors.seaDeep} />
         </View>
+      </PaperScene>
+      <View style={{ alignItems: 'center', gap: Spacing.sm }}>
         <T variant="title">Badgers</T>
         <T variant="muted" style={{ textAlign: 'center' }}>
           Learn new skills with friends, one badge at a time.

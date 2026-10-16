@@ -12,7 +12,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={theme}>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShadowVisible: false, headerTintColor: Colors.primary, headerTitleStyle: { color: Colors.text }, headerBackButtonDisplayMode: 'minimal' }}>
+      <Stack screenOptions={{ headerShadowVisible: false, headerTintColor: Colors.primary, headerTitleStyle: { color: Colors.text, fontWeight: '800' }, headerBackButtonDisplayMode: 'minimal' }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="welcome" options={{ headerShown: false }} />
         <Stack.Screen name="badge/[id]" options={{ title: '' }} />

@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router/js-tabs';
 import { Pressable, type ColorValue } from 'react-native';
 
 import { Icon } from '@/components/ui';
-import { Colors, type IconName } from '@/constants/theme';
+import { Colors, Paper, type IconName } from '@/constants/theme';
 import { useStore } from '@/data/store';
 
 function tabIcon(name: IconName) {
@@ -24,10 +24,11 @@ function NewEntryButton() {
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: Colors.primary,
+        backgroundColor: Colors.accent,
         alignItems: 'center',
         justifyContent: 'center',
-        opacity: pressed ? 0.75 : 1,
+        boxShadow: pressed ? Paper.pressed : Paper.low,
+        transform: [{ translateY: pressed ? 2 : 0 }],
       })}>
       <Icon name="plus" size={22} color={Colors.primaryText} />
     </Pressable>
@@ -43,11 +44,12 @@ export default function TabLayout() {
       screenOptions={{
         headerShadowVisible: false,
         headerStyle: { backgroundColor: Colors.background },
-        headerTitleStyle: { color: Colors.text, fontWeight: '800', fontSize: 20 },
+        headerTitleStyle: { color: Colors.text, fontWeight: '900', fontSize: 22 },
         headerRight: () => <NewEntryButton />,
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.textMuted,
-        tabBarStyle: { backgroundColor: Colors.surface, borderTopColor: Colors.border },
+        tabBarLabelStyle: { fontWeight: '800' },
+        tabBarStyle: { backgroundColor: Colors.surface, borderTopWidth: 0, boxShadow: '0px -2px 0px rgba(120, 84, 34, 0.08), 0px -6px 16px -6px rgba(120, 84, 34, 0.22)' },
       }}>
       <Tabs.Screen name="index" options={{ title: 'Banner', tabBarIcon: tabIcon('flag-variant') }} />
       <Tabs.Screen name="browser" options={{ title: 'Browser', tabBarIcon: tabIcon('compass') }} />

@@ -1,9 +1,11 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 
 import { BadgeArt } from '@/components/badge-art';
 import { Card, Icon, Pill, ProgressBar, Row, T } from '@/components/ui';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { Colors, Paper, Radius, Spacing, shade } from '@/constants/theme';
 import { byId, checklist, displayStatus } from '@/data/rules';
 import type { BadgeProgress, Db, Id } from '@/data/types';
 
@@ -43,8 +45,9 @@ export function ProgressCard({ db, progress, showOwner }: { db: Db; progress: Ba
 }
 
 /**
- * The digital copy of a member's physical banner. In arrange mode, arrows
- * move a badge one slot so the layout can match the real banner.
+ * The digital copy of a member's physical banner, drawn as a cut-paper
+ * pennant. In arrange mode, arrows move a badge one slot so the layout can
+ * match the real banner.
  */
 export function BannerGrid({
   db,
@@ -57,37 +60,48 @@ export function BannerGrid({
   arranging?: boolean;
   onMove?: (id: Id, dir: -1 | 1) => void;
 }) {
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  const { w, h } = size;
+  const notch = 34;
+  // Pennant body with a swallowtail cut at the bottom.
+  const pennant = `M 0 0 H ${w} V ${h} L ${w / 2} ${h - notch} L 0 ${h} Z`;
+
   return (
-    <View style={styles.banner}>
+    <View>
       <View style={styles.rod} />
-      <View style={styles.grid}>
-        {tiles.map((p, i) => {
-          const badge = byId(db.badges, p.badge_id);
-          if (!badge) return null;
-          return (
-            <View key={p.id} style={styles.tile}>
-              <Pressable
-                disabled={arranging}
-                onPress={() => router.push({ pathname: '/progress/[id]', params: { id: p.id } })}
-                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, alignItems: 'center', gap: 6 })}>
-                <BadgeArt badge={badge} level={p.level} size={68} />
-                <T numberOfLines={2} style={styles.tileLabel}>
-                  {badge.name}
-                </T>
-              </Pressable>
-              {arranging && (
-                <Row gap={4}>
-                  <ArrowButton icon="arrow-left" label={`Move ${badge.name} earlier`} disabled={i === 0} onPress={() => onMove?.(p.id, -1)} />
-                  <ArrowButton icon="arrow-right" label={`Move ${badge.name} later`} disabled={i === tiles.length - 1} onPress={() => onMove?.(p.id, 1)} />
-                </Row>
-              )}
-            </View>
-          );
-        })}
-      </View>
-      <View style={styles.notchRow}>
-        <View style={styles.notchLeft} />
-        <View style={styles.notchRight} />
+      <View onLayout={(e) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })} style={styles.banner}>
+        {w > 0 && (
+          <Svg width={w} height={h + 6} style={StyleSheet.absoluteFill}>
+            <Path d={pennant} fill="rgba(80, 60, 30, 0.22)" transform="translate(0, 6)" />
+            <Path d={pennant} fill={Colors.seaDeep} />
+            <Path d={`M 10 0 H ${w - 10} V ${h - 14} L ${w / 2} ${h - notch - 12} L 10 ${h - 14} Z`} fill={shade(Colors.seaDeep, 0.08)} />
+          </Svg>
+        )}
+        <View style={styles.grid}>
+          {tiles.map((p, i) => {
+            const badge = byId(db.badges, p.badge_id);
+            if (!badge) return null;
+            return (
+              <View key={p.id} style={styles.tile}>
+                <Pressable
+                  disabled={arranging}
+                  onPress={() => router.push({ pathname: '/progress/[id]', params: { id: p.id } })}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1, alignItems: 'center', gap: 6 })}>
+                  <BadgeArt badge={badge} level={p.level} size={72} />
+                  <T numberOfLines={2} style={styles.tileLabel}>
+                    {badge.name}
+                  </T>
+                </Pressable>
+                {arranging && (
+                  <Row gap={4}>
+                    <ArrowButton icon="arrow-left" label={`Move ${badge.name} earlier`} disabled={i === 0} onPress={() => onMove?.(p.id, -1)} />
+                    <ArrowButton icon="arrow-right" label={`Move ${badge.name} later`} disabled={i === tiles.length - 1} onPress={() => onMove?.(p.id, 1)} />
+                  </Row>
+                )}
+              </View>
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -101,32 +115,23 @@ function ArrowButton({ icon, label, disabled, onPress }: { icon: 'arrow-left' | 
       disabled={disabled}
       onPress={onPress}
       style={[styles.arrow, disabled && { opacity: 0.3 }]}>
-      <Icon name={icon} size={16} color={Colors.primaryText} />
+      <Icon name={icon} size={16} color={Colors.primary} />
     </Pressable>
   );
 }
 
-const BANNER = '#2F4A40';
-
 const styles = StyleSheet.create({
-  banner: { alignItems: 'stretch' },
-  rod: { height: 10, borderRadius: 5, backgroundColor: '#8A6A43', marginHorizontal: -8 },
+  rod: { height: 12, borderRadius: 6, backgroundColor: '#A87A4A', marginHorizontal: -10, boxShadow: Paper.low, zIndex: 1 },
+  banner: { marginTop: -4, paddingBottom: 46 },
   grid: {
-    backgroundColor: BANNER,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    paddingVertical: Spacing.xl,
-    paddingHorizontal: Spacing.sm,
+    paddingTop: Spacing.xl,
+    paddingHorizontal: Spacing.md,
     rowGap: Spacing.lg,
-    borderBottomLeftRadius: 2,
-    borderBottomRightRadius: 2,
   },
-  tile: { width: 96, alignItems: 'center', gap: 6 },
-  tileLabel: { color: '#F6F1E7', fontSize: 12, fontWeight: '600', textAlign: 'center' },
-  arrow: { width: 28, height: 24, borderRadius: Radius.sm, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
-  // The swallowtail cut at the bottom of the banner.
-  notchRow: { flexDirection: 'row', height: 28 },
-  notchLeft: { flex: 1, borderTopWidth: 28, borderTopColor: BANNER, borderRightWidth: 40, borderRightColor: 'transparent' },
-  notchRight: { flex: 1, borderTopWidth: 28, borderTopColor: BANNER, borderLeftWidth: 40, borderLeftColor: 'transparent' },
+  tile: { width: 100, alignItems: 'center', gap: 6 },
+  tileLabel: { color: Colors.cloud, fontSize: 12, fontWeight: '800', textAlign: 'center' },
+  arrow: { width: 30, height: 26, borderRadius: Radius.sm, backgroundColor: Colors.cloud, alignItems: 'center', justifyContent: 'center', boxShadow: Paper.low },
 });

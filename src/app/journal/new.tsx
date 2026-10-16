@@ -42,7 +42,7 @@ export default function NewJournalEntry() {
             accessibilityRole="button"
             accessibilityLabel="Add photos"
             onPress={pickPhotos}
-            style={{ width: 84, height: 84, borderRadius: Radius.sm, borderWidth: 1.5, borderStyle: 'dashed', borderColor: Colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.surface }}>
+            style={{ width: 84, height: 84, borderRadius: Radius.sm, borderWidth: 2, borderStyle: 'dashed', borderColor: Colors.sand, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.surface }}>
             <Icon name="image-plus" size={26} color={Colors.textMuted} />
           </Pressable>
         </Row>

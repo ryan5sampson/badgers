@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { BadgeArt } from '@/components/badge-art';
+import { PaperScene } from '@/components/paper-scene';
 import { StatusPill } from '@/components/progress';
 import { RequirementList } from '@/components/requirements';
 import { Avatar, Button, Card, Chip, Empty, Pill, Row, Screen, Section, T, attempt, notify } from '@/components/ui';
@@ -33,8 +34,10 @@ export default function BadgeDetail() {
   return (
     <Screen>
       <Stack.Screen options={{ title: badge.name }} />
-      <View style={{ alignItems: 'center', gap: Spacing.sm }}>
+      <PaperScene height={150} style={{ alignItems: 'center', justifyContent: 'center' }}>
         <BadgeArt badge={badge} size={112} level={holders.find((h) => h.user.id === me.id)?.level} />
+      </PaperScene>
+      <View style={{ alignItems: 'center', gap: Spacing.sm }}>
         <T variant="title" style={{ textAlign: 'center' }}>
           {badge.name}
         </T>
