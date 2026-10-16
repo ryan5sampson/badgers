@@ -57,9 +57,12 @@ function layout(width: number, rows: number) {
   const hexW = (width - PAD * 2 - GAP * 2) / (1 + 0.75 * (COLS - 1));
   const hexH = hexW * HEX_RATIO;
   const step = hexH + GAP;
+  // Slots count up from the bottom, so badges fill the banner from its
+  // point upward: the middle cell of a row sits lowest, then its neighbors.
   const slot = (i: number) => {
-    const col = i % COLS;
-    const row = Math.floor(i / COLS);
+    const fromBottom = Math.floor(i / COLS);
+    const col = [1, 0, 2][i % COLS];
+    const row = rows - 1 - fromBottom;
     return { x: PAD + col * (0.75 * hexW + GAP), y: PAD + row * step + (col === 1 ? step / 2 : 0) };
   };
   const sideBottom = PAD + (rows - 1) * step + hexH;
@@ -86,8 +89,9 @@ function rowsFor(width: number, height: number | undefined, minSlots: number) {
 
 /**
  * The digital copy of a member's physical banner: a cut-paper pennant with
- * a honeycomb of badge slots. Badges show art only, no labels. In arrange
- * mode, tap a badge and then a slot to move it there.
+ * a honeycomb of badge slots, filled from the bottom up. Badges show art
+ * only, no labels. In arrange mode, tap a badge and then a slot to move it
+ * there.
  */
 export function HoneycombBanner({
   db,
