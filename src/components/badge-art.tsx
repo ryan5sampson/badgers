@@ -6,8 +6,11 @@ import Svg, { ClipPath, Defs, G, Path, Polygon } from 'react-native-svg';
 import { BadgeIcons, CategoryStyle, Colors, shade } from '@/constants/theme';
 import type { Badge, Level } from '@/data/types';
 
+/** Height-to-width ratio of a regular hexagon with a flat top and bottom. */
+export const HEX_RATIO = Math.sqrt(3) / 2;
+
 /** Points for a hexagon with a flat top and a flat bottom. */
-function hexPoints(x: number, y: number, w: number, h: number) {
+export function hexPoints(x: number, y: number, w: number, h: number) {
   return [
     [x + w * 0.25, y],
     [x + w * 0.75, y],
@@ -32,8 +35,8 @@ export function BadgeArt({ badge, level, size = 56, dimmed }: { badge: Badge; le
   const rim = level === 'master' ? Colors.masterRim : level === 'beginner' ? Colors.beginnerRim : Colors.cloud;
 
   const w = size;
-  const h = Math.round(size * 0.88);
   const lift = Math.max(2, size * 0.05);
+  const h = size * HEX_RATIO + lift;
   const ring = Math.max(3, size * 0.09);
   const innerW = w - ring * 2;
   const innerH = h - lift - ring * 2;

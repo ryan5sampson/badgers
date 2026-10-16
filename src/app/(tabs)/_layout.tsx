@@ -1,38 +1,17 @@
-import { Redirect, router } from 'expo-router';
+import { Redirect } from 'expo-router';
 import { Tabs } from 'expo-router/js-tabs';
-import { Pressable, type ColorValue } from 'react-native';
+import { View, type ColorValue } from 'react-native';
+
+import { NewEntryButton } from '@/components/header-buttons';
 
 import { Icon } from '@/components/ui';
-import { Colors, Paper, type IconName } from '@/constants/theme';
+import { Colors, type IconName } from '@/constants/theme';
 import { useStore } from '@/data/store';
 
 function tabIcon(name: IconName) {
   return function TabIcon({ color, size }: { color: ColorValue; size: number }) {
     return <Icon name={name} color={color as string} size={size} />;
   };
-}
-
-/** The + button on every tab opens a new journal entry. */
-function NewEntryButton() {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel="New journal entry"
-      onPress={() => router.push('/journal/new')}
-      style={({ pressed }) => ({
-        marginRight: 16,
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: Colors.accent,
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: pressed ? Paper.pressed : Paper.low,
-        transform: [{ translateY: pressed ? 2 : 0 }],
-      })}>
-      <Icon name="plus" size={22} color={Colors.primaryText} />
-    </Pressable>
-  );
 }
 
 export default function TabLayout() {
@@ -45,7 +24,11 @@ export default function TabLayout() {
         headerShadowVisible: false,
         headerStyle: { backgroundColor: Colors.background },
         headerTitleStyle: { color: Colors.text, fontWeight: '900', fontSize: 22 },
-        headerRight: () => <NewEntryButton />,
+        headerRight: () => (
+          <View style={{ marginRight: 16 }}>
+            <NewEntryButton />
+          </View>
+        ),
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.textMuted,
         tabBarLabelStyle: { fontWeight: '800' },

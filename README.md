@@ -35,7 +35,7 @@ The seed data sets up a few flows to try right away:
 
 | Area | Screens |
 | --- | --- |
-| Banner | Your banner with an arrange mode, in-progress checklists, and saved badges |
+| Banner | A full-screen honeycomb banner with an arrange mode; earned-badge pages with photos, awarders, check-offs, and entries; in-progress checklists and saved badges below |
 | Browser | Search, category filters, badge pages with both levels, save and start, the new-badge editor with a duplicate check, and idea submission |
 | Journal | The **+** button on every tab, photo picker, and optional badge and requirement tags |
 | Check-offs and awards | Request and confirm check-offs; master, two-member, and creator awards |
@@ -60,7 +60,7 @@ These fill gaps in the spec. Each is the simplest option, and each is easy to ch
 - **Award readiness:** the **Award** and **Approve** buttons appear only when every required item is done.
 - **Master level:** only a master of the badge can award the master level. If no master exists, no one can award it yet.
 - **Journals** are visible to the whole clan; there's no per-entry privacy setting.
-- **Banner arranging** uses arrow buttons instead of drag and drop.
+- **Banner layout** is a three-column honeycomb that fills the screen, with art only and no labels. To arrange it, tap a badge and then a slot instead of dragging. Empty slots stay open, so the layout can match gaps on a physical banner.
 - **Badge art** is a placeholder: a flat-topped hexagon in the category color with an icon and cut-paper hills. Earned beginner badges have a green rim and master badges a purple rim.
 - **Removing a duplicate** marks the badge `declined` instead of deleting it, so earned history stays intact.
 - **Events** take a typed date for now; a date picker comes later.

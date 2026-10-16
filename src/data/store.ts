@@ -5,7 +5,7 @@
 
 import { useSyncExternalStore } from 'react';
 
-import { approvalsFor, awardAbility, byId, canEditRequirements, checklist, isClanLead } from './rules';
+import { approvalsFor, awardAbility, bannerSlots, byId, canEditRequirements, checklist, isClanLead, nextBannerSlot } from './rules';
 import { CLAN_ID, createSeed } from './seed';
 import type { Badge, BadgeProgress, Category, Db, Id, Level, Requirement, RsvpStatus } from './types';
 
@@ -135,7 +135,7 @@ function createActions(get: () => Db, set: (db: Db) => void, getMe: () => Id | n
       };
       if (status === 'published') {
         const progressId = newId('p');
-        const position = db.badge_progress.filter((p) => p.user_id === userId && p.status === 'awarded').length;
+        const position = nextBannerSlot(db, userId);
         next.badge_progress = [
           ...next.badge_progress,
           { id: progressId, user_id: userId, badge_id: badgeId, level: 'master', status: 'awarded', started_at: now(), awarded_at: now(), banner_position: position },
@@ -259,34 +259,38 @@ function createActions(get: () => Db, set: (db: Db) => void, getMe: () => Id | n
       let next: Db = { ...db, awards: [...db.awards, { id: newId('a'), progress_id: p.id, awarded_by_user_id: userId, method, created_at: now() }] };
       const done = method === 'master' || approvalsFor(next, p.id).length >= 2;
       if (done) {
-        const position = db.badge_progress.filter((x) => x.user_id === p.user_id && x.status === 'awarded').length;
+        // A master level takes over the slot its beginner level held.
         const existingTile = db.badge_progress.find(
           (x) => x.user_id === p.user_id && x.badge_id === p.badge_id && x.status === 'awarded',
         );
+        const slot = existingTile ? [...bannerSlots(db, p.user_id)].find(([, t]) => t.id === existingTile.id)?.[0] : undefined;
         next = patchProgress(next, p.id, {
           status: 'awarded',
           awarded_at: now(),
-          banner_position: existingTile?.banner_position ?? position,
+          banner_position: slot ?? nextBannerSlot(db, p.user_id),
         });
       }
       set(next);
       return done;
     },
 
-    /** Moves a badge one slot on the banner to match the physical layout. */
-    moveOnBanner(progressId: Id, direction: -1 | 1, orderedIds: Id[]) {
-      const index = orderedIds.indexOf(progressId);
-      const target = index + direction;
-      if (index < 0 || target < 0 || target >= orderedIds.length) return;
-      const order = [...orderedIds];
-      [order[index], order[target]] = [order[target], order[index]];
+    /**
+     * Moves a badge to a banner slot so the layout matches the physical
+     * banner. If another badge holds that slot, the two swap.
+     */
+    placeOnBanner(progressId: Id, slot: number) {
+      const userId = me();
       const db = get();
+      const slots = bannerSlots(db, userId);
+      const from = [...slots].find(([, t]) => t.id === progressId)?.[0];
+      if (from === undefined) throw new RuleError('You can only arrange badges on your own banner.');
+      const positions = new Map([...slots].map(([pos, t]) => [t.id, pos]));
+      const occupant = slots.get(slot);
+      positions.set(progressId, slot);
+      if (occupant && occupant.id !== progressId) positions.set(occupant.id, from);
       set({
         ...db,
-        badge_progress: db.badge_progress.map((p) => {
-          const pos = order.indexOf(p.id);
-          return pos >= 0 ? { ...p, banner_position: pos } : p;
-        }),
+        badge_progress: db.badge_progress.map((p) => (positions.has(p.id) ? { ...p, banner_position: positions.get(p.id)! } : p)),
       });
     },
 

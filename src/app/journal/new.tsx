@@ -19,7 +19,7 @@ export default function NewJournalEntry() {
   const [progressId, setProgressId] = useState<string | null>(params.progressId ?? null);
   const [requirementId, setRequirementId] = useState<string | null>(params.requirementId ?? null);
 
-  const myProgress = progressFor(db, me.id, ['in_progress', 'ready']);
+  const myProgress = progressFor(db, me.id, ['in_progress', 'ready', 'awarded']);
   const tagged = byId(db.badge_progress, progressId);
   const actionReqs = tagged ? requirementsFor(db, tagged.badge_id, tagged.level).filter((r) => r.part === 'action') : [];
 

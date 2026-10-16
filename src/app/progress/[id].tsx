@@ -2,12 +2,15 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { Image } from 'expo-image';
+
 import { BadgeArt } from '@/components/badge-art';
+import { PaperScene } from '@/components/paper-scene';
 import { JournalCard } from '@/components/journal';
 import { StatusPill } from '@/components/progress';
 import { PART_HINT, PART_LABEL } from '@/components/requirements';
-import { Avatar, Button, Card, Empty, Icon, Row, Screen, Section, T, attempt, formatDate, notify } from '@/components/ui';
-import { Colors, Spacing } from '@/constants/theme';
+import { Avatar, Button, Card, Empty, Icon, Pill, Row, Screen, Section, T, attempt, formatDate, notify } from '@/components/ui';
+import { Colors, Paper, Radius, Spacing } from '@/constants/theme';
 import { useMe, useStore } from '@/data/store';
 import {
   approvalsFor,
@@ -19,6 +22,7 @@ import {
   displayStatus,
   entriesFor,
   pendingRequestFor,
+  photosFor,
   userName,
   type ChecklistGroup,
 } from '@/data/rules';
@@ -48,24 +52,64 @@ export default function ProgressDetail() {
   const owner = userName(db, progress.user_id);
   const list = checklist(db, progress);
   const status = displayStatus(db, progress);
-  const entries = entriesFor(db, progress.id);
+  const earned = progress.status === 'awarded';
+  // An earned badge's page collects entries from every level of it.
+  const entries = earned
+    ? photosFor(db, progress.user_id, badge.id).sort((a, b) => b.created_at.localeCompare(a.created_at))
+    : entriesFor(db, progress.id);
+  const photos = entries.flatMap((e) => e.photo_urls.map((uri) => ({ uri, entry: e })));
 
   return (
     <Screen>
       <Stack.Screen options={{ title: mine ? badge.name : `${owner}: ${badge.name}` }} />
-      <Row gap={Spacing.lg}>
-        <BadgeArt badge={badge} size={84} level={progress.status === 'awarded' ? progress.level : null} dimmed={progress.status === 'saved'} />
-        <View style={{ flex: 1, gap: 4 }}>
-          <T variant="heading">{badge.name}</T>
-          <T variant="muted">
-            {mine ? 'Your' : `${owner}’s`} {progress.level} level
-          </T>
-          <StatusPill db={db} progress={progress} />
-        </View>
-      </Row>
+      {earned ? (
+        <>
+          <PaperScene height={170} style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <BadgeArt badge={badge} size={124} level={progress.level} />
+          </PaperScene>
+          <View style={{ alignItems: 'center', gap: 4 }}>
+            <T variant="title" style={{ textAlign: 'center' }}>
+              {badge.name}
+            </T>
+            <Pill label={progress.level === 'master' ? 'Master' : 'Beginner'} tone={progress.level} style={{ alignSelf: 'center' }} />
+          </View>
+        </>
+      ) : (
+        <Row gap={Spacing.lg}>
+          <BadgeArt badge={badge} size={84} dimmed={progress.status === 'saved'} />
+          <View style={{ flex: 1, gap: 4 }}>
+            <T variant="heading">{badge.name}</T>
+            <T variant="muted">
+              {mine ? 'Your' : `${owner}’s`} {progress.level} level
+            </T>
+            <StatusPill db={db} progress={progress} />
+          </View>
+        </Row>
+      )}
       <Button label="About this badge" kind="ghost" small icon="information-outline" onPress={() => router.push({ pathname: '/badge/[id]', params: { id: badge.id } })} style={{ alignSelf: 'flex-start' }} />
 
-      {progress.status === 'awarded' && <EarnedCard db={db} progress={progress} />}
+      {earned && <EarnedCard db={db} progress={progress} />}
+      {earned && (
+        <Section title="Photos">
+          {photos.length > 0 ? (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm }}>
+              {photos.map(({ uri, entry }) => (
+                <Image key={`${entry.id}-${uri}`} source={{ uri }} style={{ width: '48%', aspectRatio: 1, borderRadius: Radius.md, boxShadow: Paper.raised }} contentFit="cover" />
+              ))}
+            </View>
+          ) : (
+            <Card>
+              <Row gap={Spacing.md}>
+                <Icon name="camera-outline" size={28} color={Colors.textMuted} />
+                <T variant="muted" style={{ flex: 1 }}>
+                  {mine ? 'Add a photo of you completing it. It goes here and in your journal.' : `${owner} hasn’t added photos for this badge yet.`}
+                </T>
+              </Row>
+              {mine && <Button small kind="secondary" icon="image-plus" label="Add a photo" onPress={() => router.push({ pathname: '/journal/new', params: { progressId: progress.id } })} style={{ alignSelf: 'flex-start' }} />}
+            </Card>
+          )}
+        </Section>
+      )}
       {progress.status === 'saved' && mine && <SavedCard progress={progress} />}
       {!mine && progress.status !== 'awarded' && progress.status !== 'saved' && <AwardPanel db={db} progress={progress} />}
       {mine && status === 'ready' && (
@@ -76,7 +120,7 @@ export default function ProgressDetail() {
       )}
 
       {progress.status !== 'saved' && (
-        <Section title={progress.status === 'awarded' ? 'Checklist' : `Checklist · ${list.complete} of ${list.total}`}>
+        <Section title={earned ? 'How it was earned' : `Checklist · ${list.complete} of ${list.total}`}>
           {(['info', 'action'] as const).map((part) => {
             const groups = list.groups.filter((g) => g.items[0].req.part === part);
             if (groups.length === 0) return null;
@@ -94,7 +138,7 @@ export default function ProgressDetail() {
       )}
 
       <Section
-        title="Journal"
+        title={earned ? 'Your entries' : 'Journal'}
         action={mine && progress.status !== 'saved' ? <Button small kind="secondary" icon="plus" label="Add entry" onPress={() => router.push({ pathname: '/journal/new', params: { progressId: progress.id } })} /> : undefined}>
         {entries.length === 0 ? (
           <T variant="muted">{mine ? 'No entries yet. Post works in progress too; nothing here has to be perfect.' : `${owner} hasn’t posted for this badge yet.`}</T>

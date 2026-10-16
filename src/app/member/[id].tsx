@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 
-import { BannerGrid, ProgressCard } from '@/components/progress';
+import { HoneycombBanner, ProgressCard } from '@/components/progress';
 import { Avatar, Empty, Row, Screen, Section, T } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useStore } from '@/data/store';
@@ -35,7 +35,7 @@ export default function MemberScreen() {
           </T>
         </View>
       </Row>
-      {tiles.length > 0 ? <BannerGrid db={db} tiles={tiles} /> : <T variant="muted">No badges on the banner yet.</T>}
+      {tiles.length > 0 ? <HoneycombBanner db={db} userId={user.id} /> : <T variant="muted">No badges on the banner yet.</T>}
       <Section title="Working on">
         {inProgress.length === 0 ? <T variant="muted">Nothing in progress right now.</T> : inProgress.map((p) => <ProgressCard key={p.id} db={db} progress={p} />)}
       </Section>

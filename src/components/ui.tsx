@@ -182,11 +182,18 @@ export function Field({ label, hint, ...props }: TextInputProps & { label: strin
   );
 }
 
-export function Pill({ label, tone = 'neutral' }: { label: string; tone?: 'neutral' | 'primary' | 'accent' }) {
-  const bg = tone === 'primary' ? Colors.primarySoft : tone === 'accent' ? Colors.accentSoft : Colors.surfaceMuted;
-  const fg = tone === 'primary' ? Colors.primary : tone === 'accent' ? shade(Colors.accent, -0.2) : Colors.textMuted;
+const PILL_TONES = {
+  neutral: { bg: Colors.surfaceMuted, fg: Colors.textMuted },
+  primary: { bg: Colors.primarySoft, fg: Colors.primary },
+  accent: { bg: Colors.accentSoft, fg: shade(Colors.accent, -0.2) },
+  beginner: { bg: shade(Colors.beginnerRim, 0.78), fg: shade(Colors.beginnerRim, -0.3) },
+  master: { bg: shade(Colors.masterRim, 0.8), fg: Colors.masterRim },
+};
+
+export function Pill({ label, tone = 'neutral', style }: { label: string; tone?: keyof typeof PILL_TONES; style?: StyleProp<ViewStyle> }) {
+  const { bg, fg } = PILL_TONES[tone];
   return (
-    <View style={[styles.pill, { backgroundColor: bg }]}>
+    <View style={[styles.pill, { backgroundColor: bg }, style]}>
       <Text style={[styles.pillLabel, { color: fg }]}>{label}</Text>
     </View>
   );

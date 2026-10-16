@@ -154,6 +154,35 @@ export function bannerFor(db: Db, userId: Id) {
   );
 }
 
+/**
+ * Places earned badges in banner slots. A badge keeps its saved slot;
+ * badges without one, or whose slot is taken, fill the first free slot.
+ */
+export function bannerSlots(db: Db, userId: Id): Map<number, BadgeProgress> {
+  const slots = new Map<number, BadgeProgress>();
+  const tiles = bannerFor(db, userId);
+  const unplaced: BadgeProgress[] = [];
+  for (const t of tiles) {
+    const pos = t.banner_position;
+    if (pos !== null && pos >= 0 && !slots.has(pos)) slots.set(pos, t);
+    else unplaced.push(t);
+  }
+  let next = 0;
+  for (const t of unplaced) {
+    while (slots.has(next)) next++;
+    slots.set(next, t);
+  }
+  return slots;
+}
+
+/** The first empty banner slot, where a newly earned badge goes. */
+export function nextBannerSlot(db: Db, userId: Id) {
+  const taken = bannerSlots(db, userId);
+  let slot = 0;
+  while (taken.has(slot)) slot++;
+  return slot;
+}
+
 export function progressFor(db: Db, userId: Id, status: BadgeProgress['status'][]) {
   return db.badge_progress
     .filter((p) => p.user_id === userId && status.includes(p.status))

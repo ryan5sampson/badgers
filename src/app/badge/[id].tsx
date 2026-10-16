@@ -98,7 +98,7 @@ export default function BadgeDetail() {
               <Row gap={Spacing.md}>
                 <Avatar name={h.user.name} />
                 <T style={{ flex: 1, fontWeight: '600' }}>{h.user.name}</T>
-                <Pill label={h.level === 'master' ? 'Master' : 'Beginner'} tone={h.level === 'master' ? 'accent' : 'neutral'} />
+                <Pill label={h.level === 'master' ? 'Master' : 'Beginner'} tone={h.level} />
               </Row>
             </Card>
           ))

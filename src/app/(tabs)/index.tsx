@@ -1,67 +1,85 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { View } from 'react-native';
+import { router, useNavigation } from 'expo-router';
+import { useLayoutEffect, useState } from 'react';
+import { ScrollView, View } from 'react-native';
 
-import { PaperScene } from '@/components/paper-scene';
-import { BannerGrid, ProgressCard } from '@/components/progress';
-import { Button, Empty, Row, Screen, Section, T } from '@/components/ui';
-import { Spacing } from '@/constants/theme';
+import { HeaderButton, NewEntryButton } from '@/components/header-buttons';
+import { HoneycombBanner, ProgressCard } from '@/components/progress';
+import { Button, Empty, Row, Section, T, attempt } from '@/components/ui';
+import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useMe, useStore } from '@/data/store';
 import { bannerFor, progressFor } from '@/data/rules';
 
+/**
+ * The banner fills the visible screen. In-progress and saved badges sit
+ * below it, one scroll away.
+ */
 export default function BannerScreen() {
   const { db, actions } = useStore();
   const me = useMe();
+  const navigation = useNavigation();
   const [arranging, setArranging] = useState(false);
+  const [viewport, setViewport] = useState(0);
   const tiles = bannerFor(db, me.id);
   const inProgress = progressFor(db, me.id, ['in_progress', 'ready']);
   const saved = progressFor(db, me.id, ['saved']);
 
-  return (
-    <Screen>
-      <PaperScene height={128} clouds={false} style={{ padding: Spacing.lg }}>
-        <Row style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <View>
-            <T variant="heading">{me.name}&apos;s banner</T>
-            <T style={{ fontWeight: '700' }}>
-              {tiles.length} {tiles.length === 1 ? 'badge' : 'badges'} earned · {inProgress.length} in progress
-            </T>
-          </View>
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: arranging ? 'Arrange your banner' : `${me.name}’s banner`,
+      headerRight: () => (
+        <Row style={{ marginRight: 16 }}>
           {tiles.length > 1 && (
-            <Button small kind={arranging ? 'primary' : 'secondary'} icon={arranging ? 'check' : 'arrow-all'} label={arranging ? 'Done' : 'Arrange'} onPress={() => setArranging(!arranging)} />
+            <HeaderButton
+              icon={arranging ? 'check' : 'arrow-all'}
+              label={arranging ? 'Done arranging' : 'Arrange banner'}
+              tone={arranging ? 'primary' : 'paper'}
+              onPress={() => setArranging(!arranging)}
+            />
           )}
+          {!arranging && <NewEntryButton />}
         </Row>
-      </PaperScene>
+      ),
+    });
+  }, [navigation, arranging, me.name, tiles.length]);
 
-      {tiles.length > 0 ? (
-        <BannerGrid
-          db={db}
-          tiles={tiles}
-          arranging={arranging}
-          onMove={(id, dir) => actions.moveOnBanner(id, dir, tiles.map((t) => t.id))}
-        />
-      ) : (
-        <Empty icon="flag-variant" title="Your banner is ready for its first badge" body="Start a badge and bring it to a sett. Every badge you earn shows up here.">
-          <Button label="Find a badge" icon="compass" onPress={() => router.push('/browser')} />
-        </Empty>
-      )}
-      {arranging && <T variant="small">Move badges to match where they sit on your physical banner.</T>}
-
-      <Section title="In progress">
-        {inProgress.length === 0 ? (
-          <T variant="muted">Nothing in progress. Pick something you&apos;ve been meaning to try.</T>
-        ) : (
-          inProgress.map((p) => <ProgressCard key={p.id} db={db} progress={p} />)
+  return (
+    <ScrollView
+      style={{ flex: 1, backgroundColor: Colors.background }}
+      contentContainerStyle={{ padding: Spacing.lg, paddingBottom: 120 }}
+      onLayout={(e) => setViewport(e.nativeEvent.layout.height)}>
+      <View style={{ width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center', gap: Spacing.lg }}>
+        {arranging && <T variant="small">Tap a badge, then tap the slot where it sits on your physical banner.</T>}
+        {viewport > 0 && (
+          <HoneycombBanner
+            db={db}
+            userId={me.id}
+            height={viewport - Spacing.lg * 2 - (arranging ? 26 : 0)}
+            arranging={arranging}
+            onPlace={(id, slot) => attempt(() => actions.placeOnBanner(id, slot))}
+          />
         )}
-      </Section>
+        {tiles.length === 0 && (
+          <Empty icon="hexagon-outline" title="Your banner is ready for its first badge" body="Start a badge and bring it to a sett. Every badge you earn takes a spot here.">
+            <Button label="Find a badge" icon="compass" onPress={() => router.push('/browser')} />
+          </Empty>
+        )}
 
-      {saved.length > 0 && (
-        <Section title="Saved for later">
-          {saved.map((p) => (
-            <ProgressCard key={p.id} db={db} progress={p} />
-          ))}
+        <Section title="In progress">
+          {inProgress.length === 0 ? (
+            <T variant="muted">Nothing in progress. Pick something you&apos;ve been meaning to try.</T>
+          ) : (
+            inProgress.map((p) => <ProgressCard key={p.id} db={db} progress={p} />)
+          )}
         </Section>
-      )}
-    </Screen>
+
+        {saved.length > 0 && (
+          <Section title="Saved for later">
+            {saved.map((p) => (
+              <ProgressCard key={p.id} db={db} progress={p} />
+            ))}
+          </Section>
+        )}
+      </View>
+    </ScrollView>
   );
 }
